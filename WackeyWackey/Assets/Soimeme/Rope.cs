@@ -18,14 +18,8 @@ public class Rope : MonoBehaviour
 	public bool Lock { get; private set; } = false;
 	Vector3 Direction => origin.position - target.position;
     Vector3 RaycastDirection => (origin.position - (Vector3)cornerOffset) - target.position;
-    //public float UnlockAngle => Vector2.SignedAngle(Vector2.up, Direction.normalized)
 
     private Vector2 direction;
-
-
-    public Transform canvas;
-    public Text guiText1;
-    public Text guiText2;
 
     Vector3 mousePosition;
 
@@ -40,26 +34,19 @@ public class Rope : MonoBehaviour
 
     bool LockerRunning = false;
 
-	void Update()
+    Mouse mouse;
+
+    private void Start()
+    {
+        mouse = FindObjectOfType<Mouse>();
+        target = mouse.transform;
+    }
+
+    void Update()
 	{
-		//Debug.Log($"{gameObject.name} {UnlockAngle}");
 		Debug.DrawLine(origin.position, target.position);
-		Debug.DrawLine(Vector2.zero, -Direction.normalized, Color.cyan);
 
-        mousePosition = GetComponentInChildren<FollowMousePhysics>().transform.position;
-
-        if(nextRope != null)
-        {
-            if (!nextRope.Lock)
-            {
-
-            }
-        }
-
-        //guiText1.text = UnlockAngle.ToString();
-        //if(nextRope != null) guiText2.text = nextRope.UnlockAngle.ToString();
-
-        canvas.transform.position = origin.position+(Vector3)Vector2.up*1;
+        mousePosition = mouse.cursorPosition;
 
 		if (Lock)
 		{
@@ -85,17 +72,6 @@ public class Rope : MonoBehaviour
                 cornerOffset = hit2.collider.GetComponent<Corner>().offset;
                 if (!LockerRunning) StartCoroutine(Locker(hit));
             }
-
-            //if (!LockerRunning) StartCoroutine(Locker(hit));
-
-			////nextRope = Instantiate(prefab);
-			////nextRope.SetOriginPosition(hit.point + hit.normal * .1f);
-			////target = nextRope.origin;
-			////Lock = true;
-			////OnLock?.Invoke();
-
-   ////         direction = mousePosition - origin.position;
-
         }
 	}
 
@@ -114,7 +90,7 @@ public class Rope : MonoBehaviour
         }
 
 		Destroy(nextRope.gameObject);
-		target = GetComponentInChildren<FollowMousePhysics>().transform;
+		target = mouse.transform;
 		Lock = false;
 		OnUnlock?.Invoke();
 	}
@@ -124,25 +100,12 @@ public class Rope : MonoBehaviour
         LockerRunning = true;
         Lock = true;
 
-        //Vector2 hitPosition = hit.point;
-        //Vector2 hitNormal = hit.normal;
-
-
-        ////Vector2 mouseHitPosition = mousePosition;
-
-        ////while(Vector2.Distance(mouseHitPosition, mousePosition) < 0.1f)
-        ////{
-        ////    yield return new WaitForEndOfFrame();
-        ////}
-
         yield return new WaitForEndOfFrame();
         if (Vector2.SignedAngle(direction, mousePosition - origin.position) > 0) position = Position.CounterClock;
         if (Vector2.SignedAngle(direction, mousePosition - origin.position) <= 0) position = Position.Clock;
 
-        ////Debug.Log(Vector2.SignedAngle(direction, mousePosition - origin.position) + " ===> " + position);
-
         this.nextRope = Instantiate(prefab);
-        this.nextRope.SetOriginPosition(/*hitPosition + hitNormal * .1f*/futurPosition);
+        this.nextRope.SetOriginPosition(futurPosition);
         target = this.nextRope.origin;
         OnLock?.Invoke();
 
