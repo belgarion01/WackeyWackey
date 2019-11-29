@@ -21,8 +21,7 @@ public class RopeExtension : MonoBehaviour
 
     void LockRope(Mouse mouse)
     {
-        //mouse.ropeDistances[mouse.ropeDistances.Count - 1].Lock();
-        //StartCoroutine(mouse.ropeDistances[mouse.ropeDistances.Count - 1].Locker(true));
+        StartCoroutine(mouse.ropeDistances[mouse.ropeDistances.Count - 1].Locker(transform.position, true));
     }
 
     void GiveExtension(Mouse mouse)

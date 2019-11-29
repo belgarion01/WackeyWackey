@@ -7,7 +7,7 @@ public class Rope : MonoBehaviour
 {
 	[SerializeField] Rope prefab = default;
     public Transform origin = default;
-	[SerializeField] Transform target = default;
+    public Transform target = default;
 
 	public UnityEvent OnLock = default;
 	public UnityEvent OnUnlock = default;
@@ -36,11 +36,14 @@ public class Rope : MonoBehaviour
 
     bool SuperLock = false;
 
+    LineRenderer lRenderer;
+
     Mouse mouse;
 
     private void Start()
     {
         mouse = FindObjectOfType<Mouse>();
+        lRenderer = GetComponent<LineRenderer>();
         target = mouse.transform;
         mouse.ropeDistances.Add(this);
     }
@@ -51,6 +54,11 @@ public class Rope : MonoBehaviour
 		Debug.DrawLine(origin.position, target.position);
 
         mousePosition = mouse.cursorPosition;
+
+        UpdateLineRenderer();
+
+        if (SuperLock) return;
+
 
 		if (Lock)
 		{
@@ -74,7 +82,7 @@ public class Rope : MonoBehaviour
             {
                 futurPosition = cornerHit.collider.GetComponent<Corner>().handlePosition;
                 cornerOffset = cornerHit.collider.GetComponent<Corner>().offset;
-                if (!LockerRunning) StartCoroutine(Locker(hit));
+                if (!LockerRunning) StartCoroutine(Locker());
             }
         }
 	}
@@ -99,7 +107,7 @@ public class Rope : MonoBehaviour
 		OnUnlock?.Invoke();
 	}
 
-    IEnumerator Locker(RaycastHit2D hit)
+    public IEnumerator Locker()
     {
         LockerRunning = true;
         Lock = true;
@@ -118,7 +126,34 @@ public class Rope : MonoBehaviour
         LockerRunning = false;
     }
 
-	public void SetOriginPosition(Vector3 position) => origin.position = position;
+    public IEnumerator Locker(Vector2 lockPosition, bool SuperLock)
+    {
+        LockerRunning = true;
+        Lock = true;
+
+        yield return new WaitForEndOfFrame();
+        if (Vector2.SignedAngle(direction, mousePosition - origin.position) > 0) position = Position.CounterClock;
+        if (Vector2.SignedAngle(direction, mousePosition - origin.position) <= 0) position = Position.Clock;
+
+        this.nextRope = Instantiate(prefab);
+        this.nextRope.SetOriginPosition(lockPosition);
+        target = this.nextRope.origin;
+        OnLock?.Invoke();
+
+        direction = mousePosition - (origin.position - (Vector3)cornerOffset);
+
+        this.SuperLock = SuperLock;
+
+        LockerRunning = false;
+    }
+
+    void UpdateLineRenderer()
+    {
+        lRenderer.SetPosition(0, origin.position);
+        lRenderer.SetPosition(1, target.position);
+    }
+
+    public void SetOriginPosition(Vector3 position) => origin.position = position;
 
 
 }

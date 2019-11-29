@@ -13,6 +13,8 @@ public class Mouse : MonoBehaviour
     float mouseX;
     float mouseY;
 
+    [SerializeField] Transform startAnchor;
+
     [HideInInspector] public Vector2 mousePosition;
     [HideInInspector] public Vector2 cursorPosition => transform.position;
 
@@ -35,6 +37,8 @@ public class Mouse : MonoBehaviour
         cam = Camera.main;
         rb2d = GetComponent<Rigidbody2D>();
         distanceJoint = GetComponent<DistanceJoint2D>();
+
+        transform.position = startAnchor.position;
     }
 
     private void Update()
@@ -46,6 +50,8 @@ public class Mouse : MonoBehaviour
         mouseY = Input.GetAxis("Mouse Y");
 
         nextPosition = Vector2.SmoothDamp(transform.position, rb2d.position + new Vector2(mouseX, mouseY) * cursorSpeed * Time.deltaTime, ref refVelocity, smoothTime, maxSpeed);
+
+        transform.right = ropeDistances[ropeDistances.Count - 1].target.position - ropeDistances[ropeDistances.Count - 1].origin.position;
 
         //Clamp distance
         distanceJoint.connectedAnchor = ropeDistances[ropeDistances.Count - 1].origin.position;
