@@ -30,6 +30,8 @@ public class PlugController : MonoBehaviour
     private Rigidbody2D rigidBody2D = default;
     private Vector3 velocity;
 
+    private Vector2 yes;
+
     private void Start()
     {
         lineRenderer.positionCount = points.Count;
@@ -42,10 +44,18 @@ public class PlugController : MonoBehaviour
     {
         var mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        var correctedPosition = Vector2.ClampMagnitude(mousePosition, radius);
+        var correctedPosition = Vector2.ClampMagnitude(mousePosition + anchorPoint.position, radius);
+
+        Debug.Log(anchorPoint.position);
+
         rigidBody2D.MovePosition(Vector3.SmoothDamp(rigidBody2D.position, correctedPosition, ref velocity, smoothTime));
 
         var linePoints = points.ToList().ConvertAll(p => p.position);
         lineRenderer.SetPositions(linePoints.ToArray());
+    }
+
+    private void OnGUI()
+    {
+        GUILayout.Label(yes.ToString());
     }
 }

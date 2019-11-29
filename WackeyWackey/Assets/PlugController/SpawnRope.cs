@@ -22,7 +22,7 @@ public class SpawnRope : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            SpawnChain(Vector2.zero, numberOfChains);
+            SpawnChain(transform.position, numberOfChains);
         }
     }
 
@@ -53,10 +53,14 @@ public class SpawnRope : MonoBehaviour
         //Head
         Transform head = AddToRope(ChainHead);
         ConnectRigidbody(GetHingeJoint(head), previousChain);
-        ConnectRigidbody(head.GetComponent<DistanceJoint2D>(), previousChain);
+        DistanceJoint2D distJoint = head.GetComponent<DistanceJoint2D>();
+        ConnectRigidbody(distJoint, tail);
+        distJoint.distance = offsetValue * (numberOfChains + 2);
         head.GetComponent<PlugController>().anchorPoint = tail.transform;
         SetupAnchor(GetHingeJoint(head.transform));
         head.GetComponent<PlugController>().points = points;
+
+        //Debug.Break();
     }
 
     Transform AddToRope(GameObject prefab)
@@ -107,7 +111,7 @@ public class SpawnRope : MonoBehaviour
 
     void SetupAnchor(HingeJoint2D joint)
     {
-        joint.connectedAnchor = new Vector2(0.2f, 0f);
+        //joint.connectedAnchor = new Vector2(0.2f, 0f);
     }
 
     HingeJoint2D GetHingeJoint(Transform obj)

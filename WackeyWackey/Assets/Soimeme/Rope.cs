@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class Rope : MonoBehaviour
 {
 	[SerializeField] Rope prefab = default;
-	[SerializeField] Transform origin = default;
+    public Transform origin = default;
 	[SerializeField] Transform target = default;
 
 	public UnityEvent OnLock = default;
@@ -34,16 +34,20 @@ public class Rope : MonoBehaviour
 
     bool LockerRunning = false;
 
+    bool SuperLock = false;
+
     Mouse mouse;
 
     private void Start()
     {
         mouse = FindObjectOfType<Mouse>();
         target = mouse.transform;
+        mouse.ropeDistances.Add(this);
     }
 
     void Update()
 	{
+
 		Debug.DrawLine(origin.position, target.position);
 
         mousePosition = mouse.cursorPosition;
@@ -64,12 +68,12 @@ public class Rope : MonoBehaviour
 
 		if (hit.collider != null)
 		{
-            RaycastHit2D hit2 = Physics2D.Raycast(hit.point, Vector2.zero, 0f, bordMask);
+            RaycastHit2D cornerHit = Physics2D.Raycast(hit.point, Vector2.zero, 0f, bordMask);
 
-            if (hit2)
+            if (cornerHit)
             {
-                futurPosition = hit2.collider.GetComponent<Corner>().handlePosition;
-                cornerOffset = hit2.collider.GetComponent<Corner>().offset;
+                futurPosition = cornerHit.collider.GetComponent<Corner>().handlePosition;
+                cornerOffset = cornerHit.collider.GetComponent<Corner>().offset;
                 if (!LockerRunning) StartCoroutine(Locker(hit));
             }
         }
@@ -88,7 +92,7 @@ public class Rope : MonoBehaviour
             if (Vector2.SignedAngle(direction, mousePosition - origin.position) > 0)
                 return;
         }
-
+        mouse.ropeDistances.Remove(nextRope);
 		Destroy(nextRope.gameObject);
 		target = mouse.transform;
 		Lock = false;
@@ -112,7 +116,9 @@ public class Rope : MonoBehaviour
         direction = mousePosition - (origin.position-(Vector3)cornerOffset);
 
         LockerRunning = false;
-    } 
+    }
 
 	public void SetOriginPosition(Vector3 position) => origin.position = position;
+
+
 }
