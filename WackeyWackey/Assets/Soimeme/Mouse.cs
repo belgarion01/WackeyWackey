@@ -85,5 +85,6 @@ public class Mouse : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.DrawSphere(cursorPosition, 0.2f);
+        Gizmos.DrawWireSphere(cursorPosition, distanceAllowed);
     }
 }

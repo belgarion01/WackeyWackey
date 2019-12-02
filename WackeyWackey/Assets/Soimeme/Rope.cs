@@ -31,6 +31,8 @@ public class Rope : MonoBehaviour
 
     Vector3 futurPosition;
     Vector2 cornerOffset;
+    [HideInInspector]
+    public Vector2 lastCornerOffset = Vector2.zero;
 
     bool LockerRunning = false;
 
@@ -82,7 +84,13 @@ public class Rope : MonoBehaviour
             {
                 futurPosition = cornerHit.collider.GetComponent<Corner>().handlePosition;
                 cornerOffset = cornerHit.collider.GetComponent<Corner>().offset;
-                if (!LockerRunning) StartCoroutine(Locker());
+                if (!LockerRunning)
+                {
+                    StartCoroutine(Locker());
+                    
+                }
+
+                
             }
         }
 	}
@@ -103,6 +111,7 @@ public class Rope : MonoBehaviour
         mouse.ropeDistances.Remove(nextRope);
 		Destroy(nextRope.gameObject);
 		target = mouse.transform;
+        cornerOffset = Vector2.zero;
 		Lock = false;
 		OnUnlock?.Invoke();
 	}
@@ -118,6 +127,7 @@ public class Rope : MonoBehaviour
 
         this.nextRope = Instantiate(prefab);
         this.nextRope.SetOriginPosition(futurPosition);
+        this.nextRope.lastCornerOffset = cornerOffset;
         target = this.nextRope.origin;
         OnLock?.Invoke();
 
@@ -137,6 +147,7 @@ public class Rope : MonoBehaviour
 
         this.nextRope = Instantiate(prefab);
         this.nextRope.SetOriginPosition(lockPosition);
+        this.nextRope.lastCornerOffset = cornerOffset;
         target = this.nextRope.origin;
         OnLock?.Invoke();
 
@@ -149,11 +160,10 @@ public class Rope : MonoBehaviour
 
     void UpdateLineRenderer()
     {
-        lRenderer.SetPosition(0, origin.position);
-        lRenderer.SetPosition(1, target.position);
+        lRenderer.SetPosition(0, (Vector2)origin.position - lastCornerOffset);
+        lRenderer.SetPosition(1, (Vector2)target.position-cornerOffset);
     }
 
     public void SetOriginPosition(Vector3 position) => origin.position = position;
-
 
 }
